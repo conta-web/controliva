@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Calculadora Retención + IVA</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #f4f5f7;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+    }
+    .card {
+      background: #ffffff;
+      padding: 22px;
+      border-radius: 18px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+      max-width: 420px;
+      width: 100%;
+    }
+    h1 {
+      text-align: center;
+      font-size: 1.3rem;
+      margin-bottom: 14px;
+    }
+    label {
+      font-weight: 600;
+      margin-top: 10px;
+      display: block;
+      font-size: 0.9rem;
+    }
+    input {
+      width: 100%;
+      padding: 9px;
+      border-radius: 8px;
+      border: 1px solid #d1d5db;
+      margin-top: 6px;
+      font-size: 0.95rem;
+      box-sizing: border-box;
+    }
+    button {
+      width: 100%;
+      background: #2563eb;
+      color: #fff;
+      padding: 11px;
+      border: none;
+      margin-top: 18px;
+      border-radius: 999px;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+    button:hover {
+      background: #1e40af;
+    }
+    .resultado {
+      margin-top: 18px;
+      padding: 14px;
+      background: #f3f4f6;
+      border-radius: 12px;
+      display: none;
+      font-size: 0.95rem;
+    }
+    .resultado p {
+      margin: 4px 0;
+    }
+    .nota {
+      font-size: 0.8rem;
+      color: #6b7280;
+      margin-top: 10px;
+      text-align: center;
+      line-height: 1.4;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Calculadora Retención + IVA</h1>
+
+    <label for="neto">Quiero recibir NETO (lo que me queda):</label>
+    <input type="number" id="neto" step="0.01" placeholder="Ej: 87.00" />
+
+    <label for="retencion">Retención (%):</label>
+    <input type="number" id="retencion" step="0.01" value="10" />
+
+    <label for="iva">IVA (%):</label>
+    <input type="number" id="iva" step="0.01" value="13" />
+
+    <button onclick="calcular()">Calcular</button>
+
+    <div id="resultado" class="resultado"></div>
+
+    <div class="nota">
+      Neto que recibes = Base - Retención + IVA.<br>
+      Total al cliente = Base + IVA.<br>
+      Con IVA 13%, Base = Total / 1.13.
+    </div>
+  </div>
+
+  <script>
+    function calcular() {
+      const neto = parseFloat(document.getElementById("neto").value);
+      const ret = parseFloat(document.getElementById("retencion").value);
+      const iva = parseFloat(document.getElementById("iva").value);
+      const resultado = document.getElementById("resultado");
+
+      if (isNaN(neto) || neto <= 0) {
+        alert("Ingresa un monto neto válido.");
+        return;
+      }
+      if (isNaN(ret) || ret < 0 || ret >= 100) {
+        alert("Ingresa un porcentaje de retención válido (0 - 99).");
+        return;
+      }
+      if (isNaN(iva) || iva < 0 || iva >= 100) {
+        alert("Ingresa un porcentaje de IVA válido (0 - 99).");
+        return;
+      }
+
+      // Neto = Base - (Base * ret/100) + (Base * iva/100)
+      // Neto = Base * (1 - ret/100 + iva/100)
+      const factor = 1 - (ret / 100) + (iva / 100);
+      const base = neto / factor;
+
+      const montoRetencion = base * (ret / 100);
+      const montoIVA = base * (iva / 100);
+      const totalCliente = base + montoIVA;
+      const netoCalculado = base - montoRetencion + montoIVA;
+
+      resultado.style.display = "block";
+      resultado.innerHTML = `
+        <p><strong>Base (sin IVA ni retención):</strong> $${base.toFixed(2)}</p>
+        <p><strong>Retención (${ret}%):</strong> -$${montoRetencion.toFixed(2)}</p>
+        <p><strong>IVA (${iva}%):</strong> +$${montoIVA.toFixed(2)}</p>
+        <hr>
+        <p><strong>Neto que recibes:</strong> $${netoCalculado.toFixed(2)}</p>
+        <p><strong>Total que paga el cliente (con IVA):</strong> $${totalCliente.toFixed(2)}</p>
+      `;
+    }
+  </script>
+</body>
+</html>
