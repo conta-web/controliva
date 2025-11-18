@@ -149,27 +149,32 @@
     <div id="sec-isr" class="seccion">
       <h2 style="font-size:1.05rem; margin-bottom:6px; text-align:center;">💸 Cálculo de ISR / Retención</h2>
 
-      <label for="netoIsr">Monto que quiero recibir NETO:</label>
+      <label for="netoIsr">Monto que quiero recibir NETO (después de retenciones):</label>
       <input type="number" id="netoIsr" step="0.01" placeholder="Ej: 35.00">
 
-      <label for="tipoCliente">Tipo de cliente:</label>
+      <label for="tipoContribuyenteSoy">¿Qué tipo de contribuyente soy?</label>
+      <select id="tipoContribuyenteSoy">
+        <option value="pequeno">Pequeño contribuyente</option>
+        <option value="mediano">Mediano contribuyente</option>
+        <option value="grande">Gran contribuyente</option>
+      </select>
+
+      <label for="tipoCliente">¿A qué tipo de cliente le facturo?</label>
       <select id="tipoCliente">
         <option value="gran">Gran contribuyente / Gobierno</option>
         <option value="mediano">Mediano contribuyente</option>
         <option value="otro">Otro / Pequeño contribuyente</option>
       </select>
 
-      <label for="retBase">Retención ISR básica (%):</label>
-      <input type="number" id="retBase" value="10" step="0.01">
-
       <button onclick="calcularISR()">Calcular cuánto debo cobrar</button>
 
       <div id="resultadoIsr" class="resultado"></div>
 
       <div class="nota">
-        Supuestos para pequeño contribuyente que presta servicios:<br>
-        • Retención ISR: 10% sobre el servicio (sin IVA).<br>
-        • Ventas a <strong>Grandes contribuyentes / Gobierno</strong>: +1% adicional sobre ventas (total 11%).
+        Supuestos referenciales (base contable simple):<br>
+        • Tasa base de retención ISR según tu categoría de contribuyente (por defecto 10%).<br>
+        • Si el cliente es <strong>Gran contribuyente / Gobierno</strong>, se suma 1% adicional de retención.<br>
+        *Ajusta los porcentajes en el código según la normativa vigente y criterio de tu contador.*
       </div>
 
       <div class="contacto">
@@ -180,6 +185,19 @@
   </div>
 
   <script>
+    // CONFIGURACIÓN DE TASAS (puedes ajustarlas si cambia la norma)
+    const CONFIG_RETENCIONES = {
+      pequeno: 10,  // % base para pequeño contribuyente
+      mediano: 10,  // % base para mediano contribuyente (puedes cambiar)
+      grande: 10    // % base para gran contribuyente (puedes cambiar)
+    };
+
+    const EXTRA_CLIENTE = {
+      gran: 1,      // % extra si el cliente es Gran contribuyente / Gobierno
+      mediano: 0,
+      otro: 0
+    };
+
     // Cambiar entre IVA e ISR
     function mostrarSeccion(seccion) {
       const btns = document.querySelectorAll(".tab-btn");
@@ -207,6 +225,10 @@
         alert("Ingresa un monto neto válido.");
         return;
       }
+      if (isNaN(iva) || iva < 0) {
+        alert("Ingresa un porcentaje de IVA válido.");
+        return;
+      }
 
       const total = neto * (1 + iva / 100);
       const ivaMonto = total - neto;
@@ -223,8 +245,8 @@
     // Cálculo ISR
     function calcularISR() {
       const neto = parseFloat(document.getElementById("netoIsr").value);
-      const tipo = document.getElementById("tipoCliente").value;
-      const retBase = parseFloat(document.getElementById("retBase").value);
+      const tipoContribuyente = document.getElementById("tipoContribuyenteSoy").value;
+      const tipoCliente = document.getElementById("tipoCliente").value;
       const res = document.getElementById("resultadoIsr");
 
       if (isNaN(neto) || neto <= 0) {
@@ -232,21 +254,41 @@
         return;
       }
 
-      let extra = (tipo === "gran") ? 1 : 0;
+      const retBase = CONFIG_RETENCIONES[tipoContribuyente] || 0;
+      const extra = EXTRA_CLIENTE[tipoCliente] || 0;
       const tasaTotal = retBase + extra;
       const factor = 1 - (tasaTotal / 100);
 
+      if (factor <= 0) {
+        alert("La suma de retenciones no puede ser 100% o más.");
+        return;
+      }
+
+      // Neto = Bruto * (1 - tasaTotal)  =>  Bruto = Neto / (1 - tasaTotal)
       const bruto = neto / factor;
       const montoISR = bruto * (retBase / 100);
       const montoExtra = bruto * (extra / 100);
 
+      const textoContribuyente =
+        tipoContribuyente === "pequeno" ? "Pequeño contribuyente" :
+        tipoContribuyente === "mediano" ? "Mediano contribuyente" :
+        "Gran contribuyente";
+
+      const textoCliente =
+        tipoCliente === "gran" ? "Gran contribuyente / Gobierno" :
+        tipoCliente === "mediano" ? "Mediano contribuyente" :
+        "Otro / Pequeño contribuyente";
+
       res.style.display = "block";
       res.innerHTML = `
+        <p><strong>Tipo de contribuyente (tú):</strong> ${textoContribuyente}</p>
+        <p><strong>Tipo de cliente:</strong> ${textoCliente}</p>
         <p><strong>Neto que deseas recibir:</strong> $${neto.toFixed(2)}</p>
-        <p><strong>Retención ISR (${retBase}%):</strong> $${montoISR.toFixed(2)}</p>
+        <p><strong>Tasa base ISR (${retBase}%):</strong> $${montoISR.toFixed(2)}</p>
         <p><strong>Retención adicional (${extra}%):</strong> $${montoExtra.toFixed(2)}</p>
         <hr>
-        <p><strong>Monto total a cobrar:</strong> $${bruto.toFixed(2)}</p>
+        <p><strong>Total retenido (${tasaTotal}%):</strong> $${(montoISR + montoExtra).toFixed(2)}</p>
+        <p><strong>Monto total a cobrar (bruto, sin IVA):</strong> $${bruto.toFixed(2)}</p>
       `;
     }
   </script>
