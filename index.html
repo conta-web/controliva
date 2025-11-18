@@ -4,48 +4,98 @@
   <meta charset="UTF-8">
   <title>Calculadora IVA e ISR (El Salvador)</title>
   <style>
+    :root {
+      --bg-body: #f4f5f7;
+      --bg-card: #ffffff;
+      --text-main: #111827;
+      --text-muted: #6b7280;
+      --border: #d1d5db;
+      --shadow: 0 4px 16px rgba(0,0,0,0.08);
+      --primary: #2563eb;
+      --primary-dark: #1d4ed8;
+      --input-bg: #ffffff;
+      --resultado-bg: #f3f4f6;
+    }
+
+    body.dark {
+      --bg-body: #111827;
+      --bg-card: #1f2937;
+      --text-main: #f9fafb;
+      --text-muted: #9ca3af;
+      --border: #374151;
+      --shadow: 0 4px 20px rgba(0,0,0,0.5);
+      --primary: #2563eb;
+      --primary-dark: #1d4ed8;
+      --input-bg: #111827;
+      --resultado-bg: #111827;
+    }
+
     body {
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background: #f4f5f7;
+      background: var(--bg-body);
+      color: var(--text-main);
       margin: 0;
       min-height: 100vh;
       display: flex;
       justify-content: center;
       align-items: center;
       padding: 20px;
+      transition: background 0.3s ease, color 0.3s ease;
     }
     .card {
-      background: #ffffff;
+      background: var(--bg-card);
       padding: 22px;
       border-radius: 18px;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.08);
-      max-width: 450px;
+      box-shadow: var(--shadow);
+      max-width: 520px;
       width: 100%;
+      transition: background 0.3s ease, box-shadow 0.3s ease;
+    }
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
     }
     h1 {
-      text-align: center;
-      font-size: 1.4rem;
-      margin-bottom: 10px;
+      font-size: 1.3rem;
+      margin: 0;
+    }
+    .theme-toggle {
+      font-size: 0.8rem;
+      padding: 5px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text-main);
+      cursor: pointer;
     }
     .tabs {
       display: flex;
       gap: 8px;
-      margin: 10px 0 18px;
+      margin: 12px 0 18px;
+      flex-wrap: wrap;
     }
     .tab-btn {
       flex: 1;
       padding: 8px;
       border-radius: 999px;
-      border: 1px solid #d1d5db;
+      border: 1px solid var(--border);
       background: #e5e7eb;
       font-size: 0.9rem;
       font-weight: 600;
       cursor: pointer;
+      color: #111827;
+    }
+    body.dark .tab-btn {
+      background: #374151;
+      color: #e5e7eb;
+      border-color: #4b5563;
     }
     .tab-btn.active {
-      background: #2563eb;
+      background: var(--primary);
       color: #ffffff;
-      border-color: #1d4ed8;
+      border-color: var(--primary-dark);
     }
     label {
       font-weight: 600;
@@ -57,14 +107,16 @@
       width: 100%;
       padding: 9px;
       border-radius: 8px;
-      border: 1px solid #d1d5db;
+      border: 1px solid var(--border);
       margin-top: 6px;
       font-size: 0.95rem;
       box-sizing: border-box;
+      background: var(--input-bg);
+      color: var(--text-main);
     }
-    button {
+    button.action {
       width: 100%;
-      background: #2563eb;
+      background: var(--primary);
       color: white;
       padding: 11px;
       border: none;
@@ -74,26 +126,29 @@
       font-size: 0.95rem;
       cursor: pointer;
     }
-    button:hover {
-      background: #1d4ed8;
+    button.action:hover {
+      background: var(--primary-dark);
     }
     .resultado {
       margin-top: 16px;
       padding: 12px;
-      background: #f3f4f6;
+      background: var(--resultado-bg);
       border-radius: 12px;
       display: none;
       font-size: 0.95rem;
+      border: 1px solid var(--border);
     }
     .resultado p {
       margin: 4px 0;
     }
     hr {
       margin: 10px 0;
+      border: none;
+      border-top: 1px solid var(--border);
     }
     .nota {
       font-size: 0.8rem;
-      color: #6b7280;
+      color: var(--text-muted);
       margin-top: 8px;
       text-align: center;
       line-height: 1.3;
@@ -109,20 +164,24 @@
       padding-top: 10px;
       font-size: 0.85rem;
       text-align: center;
-      color: #374151;
-      border-top: 1px solid #d1d5db;
+      color: var(--text-main);
+      border-top: 1px solid var(--border);
     }
   </style>
 </head>
-<body>
+<body class="dark"><!-- arranca en modo oscuro -->
 
   <div class="card">
-    <h1>Calculadora IVA e ISR</h1>
+    <div class="card-header">
+      <h1>Calculadora IVA e ISR</h1>
+      <button class="theme-toggle" onclick="toggleTheme()">🌙 / ☀️</button>
+    </div>
 
     <!-- BOTONES DE SELECCIÓN -->
     <div class="tabs">
       <button class="tab-btn active" onclick="mostrarSeccion('iva')">1) IVA</button>
       <button class="tab-btn" onclick="mostrarSeccion('isr')">2) ISR / Retención</button>
+      <button class="tab-btn" onclick="mostrarSeccion('combo')">3) IVA + ISR combinado</button>
     </div>
 
     <!-- SECCIÓN IVA -->
@@ -135,7 +194,7 @@
       <label for="iva">IVA (%):</label>
       <input type="number" id="iva" value="13" step="0.01">
 
-      <button onclick="calcularIVA()">Calcular total con IVA</button>
+      <button class="action" onclick="calcularIVA()">Calcular total con IVA</button>
 
       <div id="resultadoIva" class="resultado"></div>
 
@@ -166,7 +225,7 @@
         <option value="otro">Otro / Pequeño contribuyente</option>
       </select>
 
-      <button onclick="calcularISR()">Calcular cuánto debo cobrar</button>
+      <button class="action" onclick="calcularISR()">Calcular cuánto debo cobrar</button>
 
       <div id="resultadoIsr" class="resultado"></div>
 
@@ -182,14 +241,47 @@
         <strong>Lic. Néstor González</strong>
       </div>
     </div>
+
+    <!-- SECCIÓN COMBINADA IVA + ISR -->
+    <div id="sec-combo" class="seccion">
+      <h2 style="font-size:1.05rem; margin-bottom:6px; text-align:center;">📊 IVA + ISR combinado</h2>
+
+      <label for="netoCombo">Monto que quiero recibir NETO (después de ISR, antes de gastos):</label>
+      <input type="number" id="netoCombo" step="0.01" placeholder="Ej: 176.99">
+
+      <label for="tipoContribuyenteSoyCombo">¿Qué tipo de contribuyente soy?</label>
+      <select id="tipoContribuyenteSoyCombo">
+        <option value="pequeno">Pequeño contribuyente</option>
+        <option value="mediano">Mediano contribuyente</option>
+        <option value="grande">Gran contribuyente</option>
+      </select>
+
+      <label for="tipoClienteCombo">¿A qué tipo de cliente le facturo?</label>
+      <select id="tipoClienteCombo">
+        <option value="gran">Gran contribuyente / Gobierno</option>
+        <option value="mediano">Mediano contribuyente</option>
+        <option value="otro">Otro / Pequeño contribuyente</option>
+      </select>
+
+      <label for="ivaCombo">IVA (%):</label>
+      <input type="number" id="ivaCombo" value="13" step="0.01">
+
+      <button class="action" onclick="calcularCombo()">Calcular total (IVA + ISR)</button>
+
+      <div id="resultadoCombo" class="resultado"></div>
+
+      <div class="nota">
+        Flujo: partimos del NETO que quieres recibir → calculamos la base sin IVA usando ISR → luego sumamos el IVA para obtener el total que pagará el cliente.
+      </div>
+    </div>
   </div>
 
   <script>
     // CONFIGURACIÓN DE TASAS (puedes ajustarlas si cambia la norma)
     const CONFIG_RETENCIONES = {
       pequeno: 10,  // % base para pequeño contribuyente
-      mediano: 10,  // % base para mediano contribuyente (puedes cambiar)
-      grande: 10    // % base para gran contribuyente (puedes cambiar)
+      mediano: 10,  // % base para mediano contribuyente (ajustable)
+      grande: 10    // % base para gran contribuyente (ajustable)
     };
 
     const EXTRA_CLIENTE = {
@@ -198,7 +290,11 @@
       otro: 0
     };
 
-    // Cambiar entre IVA e ISR
+    function toggleTheme() {
+      document.body.classList.toggle("dark");
+    }
+
+    // Cambiar entre secciones
     function mostrarSeccion(seccion) {
       const btns = document.querySelectorAll(".tab-btn");
       const secciones = document.querySelectorAll(".seccion");
@@ -209,9 +305,12 @@
       if (seccion === "iva") {
         btns[0].classList.add("active");
         document.getElementById("sec-iva").classList.add("activa");
-      } else {
+      } else if (seccion === "isr") {
         btns[1].classList.add("active");
         document.getElementById("sec-isr").classList.add("activa");
+      } else {
+        btns[2].classList.add("active");
+        document.getElementById("sec-combo").classList.add("activa");
       }
     }
 
@@ -235,14 +334,14 @@
 
       res.style.display = "block";
       res.innerHTML = `
-        <p><strong>Neto:</strong> $${neto.toFixed(2)}</p>
+        <p><strong>Neto (sin IVA):</strong> $${neto.toFixed(2)}</p>
         <p><strong>IVA (${iva}%):</strong> $${ivaMonto.toFixed(2)}</p>
         <hr>
-        <p><strong>Total a cobrar:</strong> $${total.toFixed(2)}</p>
+        <p><strong>Total a cobrar (con IVA):</strong> $${total.toFixed(2)}</p>
       `;
     }
 
-    // Cálculo ISR
+    // Cálculo ISR solo
     function calcularISR() {
       const neto = parseFloat(document.getElementById("netoIsr").value);
       const tipoContribuyente = document.getElementById("tipoContribuyenteSoy").value;
@@ -264,7 +363,6 @@
         return;
       }
 
-      // Neto = Bruto * (1 - tasaTotal)  =>  Bruto = Neto / (1 - tasaTotal)
       const bruto = neto / factor;
       const montoISR = bruto * (retBase / 100);
       const montoExtra = bruto * (extra / 100);
@@ -289,6 +387,67 @@
         <hr>
         <p><strong>Total retenido (${tasaTotal}%):</strong> $${(montoISR + montoExtra).toFixed(2)}</p>
         <p><strong>Monto total a cobrar (bruto, sin IVA):</strong> $${bruto.toFixed(2)}</p>
+      `;
+    }
+
+    // Cálculo combinado IVA + ISR
+    function calcularCombo() {
+      const neto = parseFloat(document.getElementById("netoCombo").value);
+      const tipoContribuyente = document.getElementById("tipoContribuyenteSoyCombo").value;
+      const tipoCliente = document.getElementById("tipoClienteCombo").value;
+      const iva = parseFloat(document.getElementById("ivaCombo").value);
+      const res = document.getElementById("resultadoCombo");
+
+      if (isNaN(neto) || neto <= 0) {
+        alert("Ingresa un monto neto válido.");
+        return;
+      }
+      if (isNaN(iva) || iva < 0) {
+        alert("Ingresa un porcentaje de IVA válido.");
+        return;
+      }
+
+      const retBase = CONFIG_RETENCIONES[tipoContribuyente] || 0;
+      const extra = EXTRA_CLIENTE[tipoCliente] || 0;
+      const tasaTotal = retBase + extra;
+      const factor = 1 - (tasaTotal / 100);
+
+      if (factor <= 0) {
+        alert("La suma de retenciones no puede ser 100% o más.");
+        return;
+      }
+
+      // 1) Partimos del neto -> sacamos base sin IVA
+      const baseSinIVA = neto / factor;
+
+      // 2) IVA sobre la base
+      const montoIVA = baseSinIVA * (iva / 100);
+      const totalCliente = baseSinIVA + montoIVA;
+
+      const montoISR = baseSinIVA * (retBase / 100);
+      const montoExtra = baseSinIVA * (extra / 100);
+
+      const textoContribuyente =
+        tipoContribuyente === "pequeno" ? "Pequeño contribuyente" :
+        tipoContribuyente === "mediano" ? "Mediano contribuyente" :
+        "Gran contribuyente";
+
+      const textoCliente =
+        tipoCliente === "gran" ? "Gran contribuyente / Gobierno" :
+        tipoCliente === "mediano" ? "Mediano contribuyente" :
+        "Otro / Pequeño contribuyente";
+
+      res.style.display = "block";
+      res.innerHTML = `
+        <p><strong>Tipo de contribuyente (tú):</strong> ${textoContribuyente}</p>
+        <p><strong>Tipo de cliente:</strong> ${textoCliente}</p>
+        <p><strong>Neto que deseas recibir (después de ISR):</strong> $${neto.toFixed(2)}</p>
+        <p><strong>Base sin IVA:</strong> $${baseSinIVA.toFixed(2)}</p>
+        <p><strong>Retención ISR (${retBase}%):</strong> $${montoISR.toFixed(2)}</p>
+        <p><strong>Retención adicional (${extra}%):</strong> $${montoExtra.toFixed(2)}</p>
+        <p><strong>IVA (${iva}%):</strong> $${montoIVA.toFixed(2)}</p>
+        <hr>
+        <p><strong>Total que paga el cliente (con IVA):</strong> $${totalCliente.toFixed(2)}</p>
       `;
     }
   </script>
