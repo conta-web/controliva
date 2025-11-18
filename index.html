@@ -2,38 +2,50 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Calculadora IVA e ISR/Retención</title>
+  <title>Calculadora IVA e ISR (El Salvador)</title>
   <style>
     body {
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       background: #f4f5f7;
       margin: 0;
-      padding: 20px;
+      min-height: 100vh;
       display: flex;
       justify-content: center;
-    }
-    .container {
-      max-width: 900px;
-      width: 100%;
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-      gap: 20px;
+      align-items: center;
+      padding: 20px;
     }
     .card {
       background: #ffffff;
-      padding: 20px 22px;
+      padding: 22px;
       border-radius: 18px;
       box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+      max-width: 450px;
+      width: 100%;
     }
     h1 {
       text-align: center;
       font-size: 1.4rem;
-      margin-bottom: 18px;
-    }
-    h2 {
-      font-size: 1.2rem;
       margin-bottom: 10px;
-      text-align: center;
+    }
+    .tabs {
+      display: flex;
+      gap: 8px;
+      margin: 10px 0 18px;
+    }
+    .tab-btn {
+      flex: 1;
+      padding: 8px;
+      border-radius: 999px;
+      border: 1px solid #d1d5db;
+      background: #e5e7eb;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .tab-btn.active {
+      background: #2563eb;
+      color: #ffffff;
+      border-color: #1d4ed8;
     }
     label {
       font-weight: 600;
@@ -41,7 +53,7 @@
       display: block;
       font-size: 0.9rem;
     }
-    input {
+    input, select {
       width: 100%;
       padding: 9px;
       border-radius: 8px;
@@ -86,16 +98,33 @@
       text-align: center;
       line-height: 1.3;
     }
+    .seccion {
+      display: none;
+    }
+    .seccion.activa {
+      display: block;
+    }
   </style>
 </head>
 <body>
 
-  <div class="container">
-    <!-- APARTADO IVA -->
-    <div class="card">
-      <h2>🧾 Cálculo de IVA</h2>
+  <div class="card">
+    <h1>Calculadora IVA e ISR</h1>
+    <p style="font-size:0.8rem; color:#6b7280; text-align:center; margin:0 0 6px;">
+      Pensada para pequeño contribuyente en El Salvador (cálculo financiero simple tipo NIIF: bruto, retenciones y neto).
+    </p>
 
-      <label for="netoIva">Monto que quiero recibir (neto):</label>
+    <!-- Selector de opción -->
+    <div class="tabs">
+      <button class="tab-btn active" onclick="mostrarSeccion('iva')">1) IVA</button>
+      <button class="tab-btn" onclick="mostrarSeccion('isr')">2) ISR / Retención</button>
+    </div>
+
+    <!-- SECCIÓN IVA -->
+    <div id="sec-iva" class="seccion activa">
+      <h2 style="font-size:1.05rem; margin-bottom:6px; text-align:center;">🧾 Cálculo de IVA</h2>
+
+      <label for="netoIva">Monto que quiero recibir (neto, sin IVA):</label>
       <input type="number" id="netoIva" step="0.01" placeholder="Ej: 176.99">
 
       <label for="iva">IVA (%):</label>
@@ -107,32 +136,58 @@
 
       <div class="nota">
         Fórmula: Total a cobrar = Neto × (1 + IVA%).<br>
-        Ejemplo: 176.99 × 1.13 = 200.00
+        Ejemplo: 176.99 × 1.13 ≈ 200.00
       </div>
     </div>
 
-    <!-- APARTADO ISR / RETENCIÓN -->
-    <div class="card">
-      <h2>💸 Cálculo de ISR / Retención</h2>
+    <!-- SECCIÓN ISR -->
+    <div id="sec-isr" class="seccion">
+      <h2 style="font-size:1.05rem; margin-bottom:6px; text-align:center;">💸 Cálculo de ISR / Retención</h2>
 
-      <label for="netoIsr">Monto que quiero recibir (neto):</label>
+      <label for="netoIsr">Monto que quiero recibir (neto, después de retenciones):</label>
       <input type="number" id="netoIsr" step="0.01" placeholder="Ej: 35.00">
 
-      <label for="retencion">Retención (%):</label>
-      <input type="number" id="retencion" value="10" step="0.01">
+      <label for="tipoCliente">¿A qué tipo de cliente le facturas?</label>
+      <select id="tipoCliente">
+        <option value="gran">Gran contribuyente / Gobierno</option>
+        <option value="mediano">Mediano contribuyente</option>
+        <option value="otro">Otro contribuyente (pequeño / normal)</option>
+      </select>
+
+      <label for="retBase">Retención de ISR básica (%):</label>
+      <input type="number" id="retBase" value="10" step="0.01">
 
       <button onclick="calcularISR()">Calcular cuánto debo cobrar</button>
 
       <div id="resultadoIsr" class="resultado"></div>
 
       <div class="nota">
-        Fórmula: Bruto = Neto / (1 - Retención%).<br>
-        Ejemplo: Para recibir 35 con 10% retención → Bruto = 38.89.
+        Supuestos: pequeño contribuyente que presta servicios.<br>
+        • Retención ISR: 10% sobre el servicio (sin IVA).<br>
+        • Ventas a <strong>Grandes contribuyentes / Gobierno</strong>: +1% adicional sobre ventas (total 11%). :contentReference[oaicite:1]{index=1}
       </div>
     </div>
   </div>
 
   <script>
+    // Cambiar entre IVA e ISR
+    function mostrarSeccion(seccion) {
+      const btns = document.querySelectorAll(".tab-btn");
+      const secciones = document.querySelectorAll(".seccion");
+
+      btns.forEach(b => b.classList.remove("active"));
+      secciones.forEach(s => s.classList.remove("activa"));
+
+      if (seccion === "iva") {
+        document.querySelectorAll(".tab-btn")[0].classList.add("active");
+        document.getElementById("sec-iva").classList.add("activa");
+      } else {
+        document.querySelectorAll(".tab-btn")[1].classList.add("active");
+        document.getElementById("sec-isr").classList.add("activa");
+      }
+    }
+
+    // CÁLCULO IVA: Neto -> Total con IVA
     function calcularIVA() {
       const neto = parseFloat(document.getElementById("netoIva").value);
       const iva = parseFloat(document.getElementById("iva").value);
@@ -153,40 +208,76 @@
 
       res.style.display = "block";
       res.innerHTML = `
-        <p><strong>Neto (lo que quieres recibir):</strong> $${neto.toFixed(2)}</p>
-        <p><strong>IVA ${iva}%:</strong> $${ivaMonto.toFixed(2)}</p>
+        <p><strong>Neto que quieres recibir:</strong> $${neto.toFixed(2)}</p>
+        <p><strong>IVA (${iva}%):</strong> $${ivaMonto.toFixed(2)}</p>
         <hr>
-        <p><strong>Total que debes cobrar (con IVA):</strong> $${total.toFixed(2)}</p>
+        <p><strong>Total a cobrar (con IVA):</strong> $${total.toFixed(2)}</p>
       `;
     }
 
+    // CÁLCULO ISR: Neto -> Bruto, según tipo de cliente
     function calcularISR() {
       const neto = parseFloat(document.getElementById("netoIsr").value);
-      const ret = parseFloat(document.getElementById("retencion").value);
+      const tipo = document.getElementById("tipoCliente").value;
+      const retBase = parseFloat(document.getElementById("retBase").value);
       const res = document.getElementById("resultadoIsr");
 
       if (isNaN(neto) || neto <= 0) {
         alert("Ingresa un monto neto válido para ISR/retención.");
         return;
       }
-      if (isNaN(ret) || ret < 0 || ret >= 100) {
-        alert("Ingresa un porcentaje de retención válido (0 - 99).");
+      if (isNaN(retBase) || retBase < 0 || retBase >= 100) {
+        alert("Ingresa un porcentaje de ISR básico válido (0 - 99).");
         return;
       }
 
-      const factor = 1 - (ret / 100);
+      let extra = 0;
+      let textoExtra = "Sin retención adicional.";
+      if (tipo === "gran") {
+        // +1% extra por ventas a grandes contribuyentes / gobierno (retención sobre ventas)
+        extra = 1;
+        textoExtra = "Incluye 1% adicional por venta a Gran contribuyente / Gobierno.";
+      } else if (tipo === "mediano") {
+        // Podrías ajustar aquí si en el futuro aplicara otra tasa adicional
+        extra = 0;
+        textoExtra = "Solo se aplica la retención básica de ISR.";
+      } else {
+        extra = 0;
+        textoExtra = "Solo se aplica la retención básica de ISR (si tu cliente es agente de retención).";
+      }
+
+      const tasaTotal = retBase + extra; // Ejemplo: 10% + 1% = 11%
+      const factor = 1 - (tasaTotal / 100);
+
+      if (factor <= 0) {
+        alert("La suma de retenciones no puede ser 100% o más.");
+        return;
+      }
+
+      // Neto = Bruto * (1 - tasaTotal)
+      // => Bruto = Neto / (1 - tasaTotal)
       const bruto = neto / factor;
-      const retencionMonto = bruto * (ret / 100);
+      const montoISR = bruto * (retBase / 100);
+      const montoExtra = bruto * (extra / 100);
 
       res.style.display = "block";
       res.innerHTML = `
-        <p><strong>Debes cobrar (bruto):</strong> $${bruto.toFixed(2)}</p>
-        <p><strong>Retención (${ret}%):</strong> $${retencionMonto.toFixed(2)}</p>
+        <p><strong>Monto que quieres recibir NETO:</strong> $${neto.toFixed(2)}</p>
+        <p><strong>Tipo de cliente:</strong> ${
+          tipo === "gran"
+            ? "Gran contribuyente / Gobierno"
+            : tipo === "mediano"
+            ? "Mediano contribuyente"
+            : "Otro contribuyente"
+        }</p>
+        <p><strong>Retención ISR básica (${retBase}%):</strong> $${montoISR.toFixed(2)}</p>
+        <p><strong>Retención adicional (${extra}%):</strong> $${montoExtra.toFixed(2)}</p>
         <hr>
-        <p><strong>Te queda neto:</strong> $${neto.toFixed(2)}</p>
+        <p><strong>Total de retenciones (${tasaTotal}%):</strong> $${(montoISR + montoExtra).toFixed(2)}</p>
+        <p><strong>Monto que debes cobrar (bruto, sin IVA):</strong> $${bruto.toFixed(2)}</p>
+        <p style="font-size:0.8rem; color:#6b7280; margin-top:6px;">${textoExtra}</p>
       `;
     }
   </script>
-
 </body>
 </html>
