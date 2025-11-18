@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>Calculadora IVA e ISR (El Salvador)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
     :root {
       --bg-body: #f4f5f7;
@@ -10,7 +11,7 @@
       --text-main: #111827;
       --text-muted: #6b7280;
       --border: #d1d5db;
-      --shadow: 0 4px 16px rgba(0,0,0,0.08);
+      --shadow: 0 2px 10px rgba(0,0,0,0.18);
       --primary: #2563eb;
       --primary-dark: #1d4ed8;
       --input-bg: #ffffff;
@@ -18,16 +19,16 @@
     }
 
     body.dark {
-      --bg-body: #111827;
-      --bg-card: #1f2937;
+      --bg-body: #020617;
+      --bg-card: #020617;
       --text-main: #f9fafb;
       --text-muted: #9ca3af;
-      --border: #374151;
-      --shadow: 0 4px 20px rgba(0,0,0,0.5);
-      --primary: #2563eb;
+      --border: #1f2937;
+      --shadow: 0 2px 12px rgba(0,0,0,0.7);
+      --primary: #3b82f6;
       --primary-dark: #1d4ed8;
-      --input-bg: #111827;
-      --resultado-bg: #111827;
+      --input-bg: #020617;
+      --resultado-bg: #020617;
     }
 
     body {
@@ -38,134 +39,184 @@
       min-height: 100vh;
       display: flex;
       justify-content: center;
-      align-items: center;
-      padding: 20px;
+      align-items: flex-start;
+      padding: 10px;
       transition: background 0.3s ease, color 0.3s ease;
     }
+
     .card {
       background: var(--bg-card);
-      padding: 22px;
-      border-radius: 18px;
+      padding: 14px 12px;
+      border-radius: 16px;
       box-shadow: var(--shadow);
-      max-width: 520px;
       width: 100%;
+      max-width: 380px;  /* pensado para pantallas ~5.5" */
       transition: background 0.3s ease, box-shadow 0.3s ease;
+      box-sizing: border-box;
     }
+
     .card-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 8px;
+      margin-bottom: 6px;
+      gap: 8px;
     }
+
     h1 {
-      font-size: 1.3rem;
+      font-size: 1.05rem;
       margin: 0;
     }
+
     .theme-toggle {
-      font-size: 0.8rem;
-      padding: 5px 10px;
+      font-size: 0.75rem;
+      padding: 4px 8px;
       border-radius: 999px;
       border: 1px solid var(--border);
       background: transparent;
       color: var(--text-main);
       cursor: pointer;
+      white-space: nowrap;
     }
+
     .tabs {
       display: flex;
-      gap: 8px;
-      margin: 12px 0 18px;
-      flex-wrap: wrap;
+      gap: 6px;
+      margin: 10px 0 12px;
     }
+
     .tab-btn {
       flex: 1;
-      padding: 8px;
+      padding: 7px 4px;
       border-radius: 999px;
       border: 1px solid var(--border);
       background: #e5e7eb;
-      font-size: 0.9rem;
+      font-size: 0.78rem;
       font-weight: 600;
       cursor: pointer;
       color: #111827;
+      text-align: center;
     }
+
     body.dark .tab-btn {
-      background: #374151;
+      background: #111827;
       color: #e5e7eb;
-      border-color: #4b5563;
+      border-color: #1f2937;
     }
+
     .tab-btn.active {
       background: var(--primary);
       color: #ffffff;
       border-color: var(--primary-dark);
     }
+
+    h2 {
+      font-size: 0.9rem;
+      margin: 0 0 6px;
+      text-align: center;
+    }
+
     label {
       font-weight: 600;
-      margin-top: 10px;
+      margin-top: 8px;
       display: block;
-      font-size: 0.9rem;
+      font-size: 0.8rem;
     }
-    input, select {
+
+    input,
+    select {
       width: 100%;
-      padding: 9px;
-      border-radius: 8px;
+      padding: 8px;
+      border-radius: 10px;
       border: 1px solid var(--border);
-      margin-top: 6px;
-      font-size: 0.95rem;
+      margin-top: 5px;
+      font-size: 0.85rem;
       box-sizing: border-box;
       background: var(--input-bg);
       color: var(--text-main);
     }
+
     button.action {
       width: 100%;
       background: var(--primary);
       color: white;
-      padding: 11px;
+      padding: 9px;
       border: none;
       border-radius: 999px;
-      margin-top: 16px;
-      font-weight: bold;
-      font-size: 0.95rem;
+      margin-top: 12px;
+      font-weight: 600;
+      font-size: 0.9rem;
       cursor: pointer;
     }
+
+    button.action:active {
+      transform: scale(0.98);
+    }
+
     button.action:hover {
       background: var(--primary-dark);
     }
+
     .resultado {
-      margin-top: 16px;
-      padding: 12px;
+      margin-top: 12px;
+      padding: 10px;
       background: var(--resultado-bg);
       border-radius: 12px;
       display: none;
-      font-size: 0.95rem;
+      font-size: 0.85rem;
       border: 1px solid var(--border);
     }
+
     .resultado p {
-      margin: 4px 0;
+      margin: 3px 0;
     }
+
     hr {
-      margin: 10px 0;
+      margin: 8px 0;
       border: none;
       border-top: 1px solid var(--border);
     }
+
     .nota {
-      font-size: 0.8rem;
+      font-size: 0.75rem;
       color: var(--text-muted);
-      margin-top: 8px;
+      margin-top: 6px;
       text-align: center;
       line-height: 1.3;
     }
+
     .seccion {
       display: none;
     }
+
     .seccion.activa {
       display: block;
     }
+
     .contacto {
-      margin-top: 18px;
-      padding-top: 10px;
-      font-size: 0.85rem;
+      margin-top: 12px;
+      padding-top: 8px;
+      font-size: 0.8rem;
       text-align: center;
       color: var(--text-main);
       border-top: 1px solid var(--border);
+    }
+
+    @media (max-width: 360px) {
+      .card {
+        padding: 12px 10px;
+        border-radius: 12px;
+      }
+      .tabs {
+        gap: 4px;
+      }
+      .tab-btn {
+        font-size: 0.74rem;
+        padding: 6px 2px;
+      }
+      h1 {
+        font-size: 0.95rem;
+      }
     }
   </style>
 </head>
@@ -180,13 +231,13 @@
     <!-- BOTONES DE SELECCIÓN -->
     <div class="tabs">
       <button class="tab-btn active" onclick="mostrarSeccion('iva')">1) IVA</button>
-      <button class="tab-btn" onclick="mostrarSeccion('isr')">2) ISR / Retención</button>
-      <button class="tab-btn" onclick="mostrarSeccion('combo')">3) IVA + ISR combinado</button>
+      <button class="tab-btn" onclick="mostrarSeccion('isr')">2) ISR</button>
+      <button class="tab-btn" onclick="mostrarSeccion('combo')">3) IVA + ISR</button>
     </div>
 
     <!-- SECCIÓN IVA -->
     <div id="sec-iva" class="seccion activa">
-      <h2 style="font-size:1.05rem; margin-bottom:6px; text-align:center;">🧾 Cálculo de IVA</h2>
+      <h2>🧾 Cálculo de IVA</h2>
 
       <label for="netoIva">Monto que quiero recibir (neto, sin IVA):</label>
       <input type="number" id="netoIva" step="0.01" placeholder="Ej: 176.99">
@@ -199,14 +250,14 @@
       <div id="resultadoIva" class="resultado"></div>
 
       <div class="nota">
-        Fórmula: Total a cobrar = Neto × (1 + IVA%).<br>
+        Total a cobrar = Neto × (1 + IVA%).<br>
         Ejemplo: 176.99 × 1.13 ≈ 200.00
       </div>
     </div>
 
     <!-- SECCIÓN ISR -->
     <div id="sec-isr" class="seccion">
-      <h2 style="font-size:1.05rem; margin-bottom:6px; text-align:center;">💸 Cálculo de ISR / Retención</h2>
+      <h2>💸 Cálculo de ISR / Retención</h2>
 
       <label for="netoIsr">Monto que quiero recibir NETO (después de retenciones):</label>
       <input type="number" id="netoIsr" step="0.01" placeholder="Ej: 35.00">
@@ -230,10 +281,10 @@
       <div id="resultadoIsr" class="resultado"></div>
 
       <div class="nota">
-        Supuestos referenciales (base contable simple):<br>
-        • Tasa base de retención ISR según tu categoría de contribuyente (por defecto 10%).<br>
-        • Si el cliente es <strong>Gran contribuyente / Gobierno</strong>, se suma 1% adicional de retención.<br>
-        *Ajusta los porcentajes en el código según la normativa vigente y criterio de tu contador.*
+        Supuestos base:<br>
+        • Tasa ISR según tu categoría (por defecto 10%).<br>
+        • Cliente Gran contribuyente / Gobierno: +1% adicional.<br>
+        Ajusta porcentajes según tu contador.
       </div>
 
       <div class="contacto">
@@ -244,9 +295,9 @@
 
     <!-- SECCIÓN COMBINADA IVA + ISR -->
     <div id="sec-combo" class="seccion">
-      <h2 style="font-size:1.05rem; margin-bottom:6px; text-align:center;">📊 IVA + ISR combinado</h2>
+      <h2>📊 IVA + ISR combinado</h2>
 
-      <label for="netoCombo">Monto que quiero recibir NETO (después de ISR, antes de gastos):</label>
+      <label for="netoCombo">Monto que quiero recibir NETO (después de ISR):</label>
       <input type="number" id="netoCombo" step="0.01" placeholder="Ej: 176.99">
 
       <label for="tipoContribuyenteSoyCombo">¿Qué tipo de contribuyente soy?</label>
@@ -271,7 +322,7 @@
       <div id="resultadoCombo" class="resultado"></div>
 
       <div class="nota">
-        Flujo: partimos del NETO que quieres recibir → calculamos la base sin IVA usando ISR → luego sumamos el IVA para obtener el total que pagará el cliente.
+        Flujo: partimos del NETO → calculamos base sin IVA con ISR → luego sumamos IVA para obtener lo que paga el cliente.
       </div>
     </div>
   </div>
@@ -279,13 +330,13 @@
   <script>
     // CONFIGURACIÓN DE TASAS (puedes ajustarlas si cambia la norma)
     const CONFIG_RETENCIONES = {
-      pequeno: 10,  // % base para pequeño contribuyente
-      mediano: 10,  // % base para mediano contribuyente (ajustable)
-      grande: 10    // % base para gran contribuyente (ajustable)
+      pequeno: 10,
+      mediano: 10,
+      grande: 10
     };
 
     const EXTRA_CLIENTE = {
-      gran: 1,      // % extra si el cliente es Gran contribuyente / Gobierno
+      gran: 1,
       mediano: 0,
       otro: 0
     };
@@ -417,10 +468,7 @@
         return;
       }
 
-      // 1) Partimos del neto -> sacamos base sin IVA
       const baseSinIVA = neto / factor;
-
-      // 2) IVA sobre la base
       const montoIVA = baseSinIVA * (iva / 100);
       const totalCliente = baseSinIVA + montoIVA;
 
