@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <title>Calculadora Retención + IVA</title>
+  <meta charset="UTF-8">
+  <title>Calculadora IVA (Neto → Total con IVA)</title>
   <style>
     body {
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-family: system-ui, sans-serif;
       background: #f4f5f7;
       display: flex;
       justify-content: center;
@@ -30,31 +30,29 @@
       font-weight: 600;
       margin-top: 10px;
       display: block;
-      font-size: 0.9rem;
     }
     input {
       width: 100%;
-      padding: 9px;
+      padding: 10px;
       border-radius: 8px;
       border: 1px solid #d1d5db;
       margin-top: 6px;
-      font-size: 0.95rem;
-      box-sizing: border-box;
+      font-size: 1rem;
     }
     button {
       width: 100%;
       background: #2563eb;
-      color: #fff;
-      padding: 11px;
+      color: white;
+      padding: 12px;
       border: none;
-      margin-top: 18px;
       border-radius: 999px;
+      margin-top: 18px;
       font-weight: bold;
-      cursor: pointer;
       font-size: 1rem;
+      cursor: pointer;
     }
     button:hover {
-      background: #1e40af;
+      background: #1d4ed8;
     }
     .resultado {
       margin-top: 18px;
@@ -62,84 +60,54 @@
       background: #f3f4f6;
       border-radius: 12px;
       display: none;
-      font-size: 0.95rem;
+      font-size: 1rem;
     }
-    .resultado p {
-      margin: 4px 0;
-    }
-    .nota {
-      font-size: 0.8rem;
-      color: #6b7280;
-      margin-top: 10px;
-      text-align: center;
-      line-height: 1.4;
+    hr {
+      margin: 10px 0;
     }
   </style>
 </head>
 <body>
+
   <div class="card">
-    <h1>Calculadora Retención + IVA</h1>
+    <h1>Calculadora de IVA</h1>
 
-    <label for="neto">Quiero recibir NETO (lo que me queda):</label>
-    <input type="number" id="neto" step="0.01" placeholder="Ej: 87.00" />
+    <label>Monto que quiero recibir (neto):</label>
+    <input type="number" id="neto" step="0.01" placeholder="Ej: 176.99">
 
-    <label for="retencion">Retención (%):</label>
-    <input type="number" id="retencion" step="0.01" value="10" />
+    <label>IVA (%):</label>
+    <input type="number" id="iva" value="13" step="0.01">
 
-    <label for="iva">IVA (%):</label>
-    <input type="number" id="iva" step="0.01" value="13" />
-
-    <button onclick="calcular()">Calcular</button>
+    <button onclick="calcular()">Calcular Total</button>
 
     <div id="resultado" class="resultado"></div>
-
-    <div class="nota">
-      Neto que recibes = Base - Retención + IVA.<br>
-      Total al cliente = Base + IVA.<br>
-      Con IVA 13%, Base = Total / 1.13.
-    </div>
   </div>
 
   <script>
     function calcular() {
       const neto = parseFloat(document.getElementById("neto").value);
-      const ret = parseFloat(document.getElementById("retencion").value);
       const iva = parseFloat(document.getElementById("iva").value);
-      const resultado = document.getElementById("resultado");
 
       if (isNaN(neto) || neto <= 0) {
         alert("Ingresa un monto neto válido.");
         return;
       }
-      if (isNaN(ret) || ret < 0 || ret >= 100) {
-        alert("Ingresa un porcentaje de retención válido (0 - 99).");
-        return;
-      }
-      if (isNaN(iva) || iva < 0 || iva >= 100) {
-        alert("Ingresa un porcentaje de IVA válido (0 - 99).");
-        return;
-      }
 
-      // Neto = Base - (Base * ret/100) + (Base * iva/100)
-      // Neto = Base * (1 - ret/100 + iva/100)
-      const factor = 1 - (ret / 100) + (iva / 100);
-      const base = neto / factor;
+      const multiplicador = 1 + (iva / 100);
 
-      const montoRetencion = base * (ret / 100);
-      const montoIVA = base * (iva / 100);
-      const totalCliente = base + montoIVA;
-      const netoCalculado = base - montoRetencion + montoIVA;
+      const total = neto * multiplicador;
+      const ivaMonto = total - neto;
 
-      resultado.style.display = "block";
-      resultado.innerHTML = `
-        <p><strong>Base (sin IVA ni retención):</strong> $${base.toFixed(2)}</p>
-        <p><strong>Retención (${ret}%):</strong> -$${montoRetencion.toFixed(2)}</p>
-        <p><strong>IVA (${iva}%):</strong> +$${montoIVA.toFixed(2)}</p>
+      const res = document.getElementById("resultado");
+      res.style.display = "block";
+      res.innerHTML = `
+        <p><strong>Neto (lo que quieres recibir):</strong> $${neto.toFixed(2)}</p>
+        <p><strong>IVA ${iva}%:</strong> $${ivaMonto.toFixed(2)}</p>
         <hr>
-        <p><strong>Neto que recibes:</strong> $${netoCalculado.toFixed(2)}</p>
-        <p><strong>Total que paga el cliente (con IVA):</strong> $${totalCliente.toFixed(2)}</p>
+        <p><strong>Total que debes cobrar:</strong> $${total.toFixed(2)}</p>
       `;
     }
   </script>
+
 </body>
 </html>
